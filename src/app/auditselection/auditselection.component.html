@@ -1,0 +1,21 @@
+<div class="audit-selection-container">
+  <h2>Select an Audit Type</h2>
+  <div class="audit-buttons">
+    <button *ngFor="let auditType of auditTypes" (click)="startAudit(auditType.name)">
+      {{ auditType.name }}
+    </button>
+  </div>
+  <div class="add-audit-type">
+    <h3>Add New Audit Type</h3>
+    <form (ngSubmit)="addAuditType()">
+      <input 
+        type="text" 
+        [(ngModel)]="newAuditTypeName" 
+        name="newAuditTypeName" 
+        placeholder="Enter new audit type" 
+        required
+      />
+      <button type="submit">Add</button>
+    </form>
+  </div>
+</div>

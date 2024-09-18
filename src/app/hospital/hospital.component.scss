@@ -1,0 +1,85 @@
+/* General styles for the hospital details section */
+.hospital-details {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .hospital-details h2 {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+  }
+  
+  .hospital-details h3 {
+    font-size: 1.5rem;
+    color: #555;
+    margin-bottom: 15px;
+  }
+  
+  /* Style for the container holding audit buttons */
+  .audit-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  
+  /* Style for individual audit buttons */
+  .audit-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff; /* Bootstrap primary color or your theme color */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    flex: 1 1 calc(33% - 20px); /* Responsive behavior */
+    text-align: center;
+    max-width: calc(33% - 20px); /* Responsive behavior */
+  }
+  
+  .audit-button:hover {
+    background-color: #0056b3; /* Darker shade of the button color on hover */
+    transform: scale(1.05); /* Slight zoom effect on hover */
+  }
+  
+  .audit-button:focus {
+    outline: none;
+  }
+  
+  /* Style for the 'Start New Audit' button */
+  .start-new-audit-button {
+    padding: 10px 20px;
+    font-size: 18px;
+    border: none;
+    border-radius: 5px;
+    background-color: #28a745; /* Green color */
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .start-new-audit-button:hover {
+    background-color: #218838; /* Darker green shade */
+  }
+  
+  /* Responsive design adjustments */
+  @media (max-width: 768px) {
+    .audit-button {
+      flex: 1 1 calc(50% - 20px); /* Two buttons per row on medium screens */
+      max-width: calc(50% - 20px); /* Two buttons per row on medium screens */
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .audit-button {
+      flex: 1 1 100%; /* Full width buttons on small screens */
+      max-width: 100%; /* Full width buttons on small screens */
+    }
+  }
+  

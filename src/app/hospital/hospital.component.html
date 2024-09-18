@@ -1,0 +1,17 @@
+<div class="hospital-details" *ngIf="hospital">
+  <h2>Hospital: {{ hospital.name }}</h2>
+  <h3>Previous Audits</h3>
+  <div class="audit-buttons">
+    <ng-container *ngFor="let audit of audits">
+      <button 
+        *ngIf="audit.auditTypeId"
+        (click)="resumeAudit(audit)"
+        class="audit-button"
+      >
+        {{ audit.auditTypeId.name }} - {{ audit.date | date }} - {{ audit.auditorName }}
+      </button>
+    </ng-container>
+  </div>
+
+  <button (click)="startNewAudit()">Start New Audit</button>
+</div>
