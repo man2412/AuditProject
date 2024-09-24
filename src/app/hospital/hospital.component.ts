@@ -58,19 +58,7 @@ export class HospitalComponent implements OnInit {
   }
 
   resumeAudit(audit: any) {
-    let auditRoute = '';
-    switch (audit.auditTypeId.name) {
-      case 'HR Audit':
-        auditRoute = 'hr-audit';
-        break;
-      case 'Radiology Audit':
-        auditRoute = 'radiology-audit';
-        break;
-      // Add cases for other audit types here
-      default:
-        auditRoute = 'radiology-audit'; // Default to radiology audit
-    }
-
+    let auditRoute = 'audit-screen';
     this.router.navigate([`/${auditRoute}`, audit._id], {
       queryParams: {
         hospitalId: this.hospital._id,

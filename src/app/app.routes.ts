@@ -10,6 +10,6 @@ export const routes: Routes = [
     { path: 'hospital-selection', component: HospitalSelectionComponent },
     { path: 'hospital/:id', component: HospitalComponent },
     { path: 'audit-selection/:hospitalId', component: AuditselectionComponent },
-    { path: 'radiology-audit/:auditId', component: RadiologyAuditComponent },
+    { path: 'audit-screen/:auditId', component: RadiologyAuditComponent },
     { path: '**', redirectTo: '/hospital-selection' }
 ];

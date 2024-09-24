@@ -45,19 +45,7 @@ export class AuditselectionComponent implements OnInit {
     if (auditType && this.auditId) {
       console.log(`Updating audit ID: ${this.auditId} with auditTypeId: ${auditType._id}`); // Add logging
       this.auditService.updateAudit(this.auditId, auditType._id).subscribe(() => {
-        let auditRoute = '';
-        switch (auditTypeName) {
-          case 'HR Audit':
-            auditRoute = 'hr-audit';
-            break;
-          case 'Radiology Audit':
-            auditRoute = 'radiology-audit';
-            break;
-          // Add cases for other audit types here
-          default:
-            auditRoute = 'radiology-audit'; // Default to radiology audit
-        }
-
+        let auditRoute = 'audit-screen';
         this.router.navigate([`/${auditRoute}`, this.auditId], {
           queryParams: {
             hospitalId: this.hospitalId,

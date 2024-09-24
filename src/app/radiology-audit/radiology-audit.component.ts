@@ -1,19 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
-interface AuditParameter {
-  name: string;
-  yes: boolean;
-  no: boolean;
-  description: string;
-  rating: number | null;
-  editMode: boolean;
-  saved: boolean;
-  files: { name: string, dataUrl: string }[];
-}
+import { AuditService } from '../services/audit.service';
+import { ActivatedRoute } from '@angular/router';
+import { HospitalService } from '../services/hospital.service';
 
 @Component({
   selector: 'app-radiology-audit',
@@ -22,149 +12,156 @@ interface AuditParameter {
   templateUrl: './radiology-audit.component.html',
   styleUrls: ['./radiology-audit.component.scss']
 })
-export class RadiologyAuditComponent {
-  hospitalName: string = '';
+export class RadiologyAuditComponent implements OnInit {
+  auditTypeId: string = '';
+  hospitalId: string = '';
   auditorName: string = '';
-  parameters: AuditParameter[] = [
-    { name: 'Parameter 1', yes: false, no: false, description: '', rating: null, editMode: false, saved: true, files: [] },
-    { name: 'Parameter 2', yes: false, no: false, description: '', rating: null, editMode: false, saved: true, files: [] }
-  ];
+  auditDate: string = '';
+  auditId: string = '';
+  parameters: any[] = [];
+  newParameterName: string = ''; // Field for adding new parameter
+  auditTypeName: string = '';
+  hospitalName: string = '';
 
-  newParameterName: string = '';
+  constructor(
+    private route: ActivatedRoute,
+    private auditService: AuditService,
+    private hospitalService: HospitalService
+  ) {}
 
-  editParameter(param: AuditParameter) {
-    param.editMode = true;
-    param.saved = false;
+  ngOnInit(): void {
+    this.loadInitialData();
   }
 
-  saveParameter(param: AuditParameter) {
-    param.editMode = false;
-    param.saved = true;
+  loadInitialData(): void {
+    this.auditTypeId = this.route.snapshot.queryParams['auditTypeId'];
+    this.hospitalId = this.route.snapshot.queryParams['hospitalId'];
+    this.auditorName = this.route.snapshot.queryParams['auditorName'];
+    this.auditDate = this.route.snapshot.queryParams['auditDate'];
+    this.auditId = this.route.snapshot.params['auditId'];
+
+    this.loadParameters(this.auditId);
+    this.loadParameterNames(this.auditTypeId);
+    this.loadAuditType(this.auditTypeId);
+    this.loadHospital(this.hospitalId);
   }
 
-  onFileChange(event: any, param: AuditParameter) {
-    const files = event.target.files;
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        param.files.push({ name: file.name, dataUrl: e.target.result });
-      };
-      reader.readAsDataURL(file);
-    }
-  }
-
-  removeFile(param: AuditParameter, index: number) {
-    param.files.splice(index, 1);
-  }
-
-  addParameter() {
-    if (this.newParameterName.trim()) {
-      this.parameters.push({
-        name: this.newParameterName,
-        yes: false,
-        no: false,
-        description: '',
-        rating: null,
-        editMode: true,
-        saved: false,
-        files: []
-      });
-      this.newParameterName = '';
-    }
-  }
-  exportToPDF() {
-    const doc = new jsPDF();
-    let y = 10;
-  
-    // Add header
-    doc.setFontSize(18);
-    doc.setFont('helvetica', 'bold');
-    doc.text('Radiology Audit', 10, y);
-    y += 10;
-  
-    // Add hospital and auditor names
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'normal');
-  
-    if (this.hospitalName.trim()) {
-      doc.text(`Hospital Name: ${this.hospitalName}`, 10, y);
-      y += 10;
-    }
-  
-    if (this.auditorName.trim()) {
-      doc.text(`Auditor Name: ${this.auditorName}`, 10, y);
-      y += 10;
-    }
-  
-    // Add parameters
-    this.parameters.forEach((param, paramIndex) => {
-      if (!param.saved) return; // Skip unsaved parameters
-      const hasContent = param.yes || param.no || param.description || param.rating !== null || param.files.length > 0;
-  
-      if (hasContent) {
-        // Add parameter name
-        doc.setFontSize(14);
-        doc.setFont('helvetica', 'bold');
-        y += 10;
-        doc.text(param.name, 10, y);
-        y += 10;
-  
-        // Add Yes/No and Description
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'normal');
-        if (param.yes) {
-          doc.text('Yes', 20, y);
-          y += 10;
-        }
-        if (param.no) {
-          doc.text('No', 20, y);
-          y += 10;
-        }
-        if (param.description) {
-          y += 5;
-          const splitDescription = doc.splitTextToSize(param.description, 180);
-          doc.text(splitDescription, 20, y);
-          y += splitDescription.length * 5;
-        }
-  
-        // Add Rating
-        if (param.rating !== null) {
-          y += 10;
-          doc.text(`Rating: ${param.rating}`, 20, y);
-          y += 10;
-        }
-  
-        // Add image attachments to the row
-        param.files.forEach((file, index) => {
-          if (file.dataUrl.startsWith('data:image')) {
-            const img = new Image();
-            img.src = file.dataUrl;
-            const ratio = img.width / img.height;
-            const imgHeight = 80;
-            const imgWidth = imgHeight * ratio;
-  
-            // Add image
-            doc.addImage(img.src, 'JPEG', 20, y, imgWidth, imgHeight);
-            y += imgHeight + 10;
-          }
-        });
-  
-        // Add separator between parameters except for the last one
-        if (paramIndex < this.parameters.length - 1) {
-          doc.setLineWidth(0.5);
-          doc.setDrawColor(0);
-          doc.line(10, y, 200, y);
-        }
+  loadParameters(auditId: string): void {
+    this.auditService.getAuditParametersByAuditId(auditId).subscribe({
+      next: (auditParameters) => {
+        this.parameters = auditParameters.map(param => ({
+          ...param,
+          description: param.description || '',
+          fileUrls: param.fileUrls || [],
+          priority: param.priority || '',
+          rating: param.rating || 0,
+          category: param.category || '',
+          availability: param.availability || false,
+          parameterNameId: param.parameterNameId,  // Ensure parameterNameId is mapped
+          parameterName: ''
+        }));
+      },
+      error: (error) => {
+        console.error('Error loading audit parameters:', error);
       }
     });
-  
-    // Save PDF
-    doc.save('audit-report.pdf');
   }
-  
-  
-  
-  
-    
-}  
+
+  loadParameterNames(auditTypeId: string): void {
+    this.auditService.getParameterNamesByAuditType(auditTypeId).subscribe({
+      next: (parameterNames) => {
+        // Map parameter names to their respective parameterNameId
+        this.parameters.forEach(param => {
+          const foundParameterName = parameterNames.find(pn => pn._id === param.parameterNameId);
+          if (foundParameterName) {
+            param.parameterName = foundParameterName.name; // Assign the name
+          }
+        });
+      },
+      error: (error) => {
+        console.error('Error loading parameter names:', error);
+      }
+    });
+  }
+
+
+  loadAuditType(auditTypeId: string): void {
+    this.auditService.getAuditTypeById(auditTypeId).subscribe({
+      next: (auditType) => {
+        this.auditTypeName = auditType.name;
+      },
+      error: (error) => {
+        console.error('Error fetching audit type:', error);
+      }
+    });
+  }
+
+  loadHospital(hospitalId: string): void {
+    this.hospitalService.getHospital(hospitalId).subscribe({
+      next: (hospital) => {
+        this.hospitalName = hospital.name;
+      },
+      error: (error) => {
+        console.error('Error fetching hospital:', error);
+      }
+    });
+  }
+
+  saveAndResumeLater(): void {
+    this.parameters.forEach(parameter => {
+      const auditParameterData = {
+        auditId: this.auditId,
+        parameterNameId: parameter.parameterNameId,
+        description: parameter.description,
+        fileUrls: parameter.fileUrls,
+        priority: parameter.priority,
+        rating: parameter.rating,
+        category: parameter.category,
+        availability: parameter.availability
+      };
+
+      if (parameter._id) {
+        // Update existing parameter (PUT)
+        this.auditService.updateAuditParameter(parameter._id, auditParameterData).subscribe({
+          next: (response) => {
+            console.log('Parameter updated:', response);
+          },
+          error: (error) => {
+            console.error('Error updating parameter:', error);
+          }
+        });
+      } else {
+        // Save new parameter (POST)
+        this.auditService.saveAuditParameters(auditParameterData).subscribe({
+          next: (response) => {
+            console.log('New parameter saved:', response);
+            // Update the parameter with the returned ID
+            parameter._id = response._id;
+          },
+          error: (error) => {
+            console.error('Error saving parameter:', error);
+          }
+        });
+      }
+    });
+  }
+
+  addParameter(): void {
+    if (this.newParameterName) {
+      const newParameter = {
+        name: this.newParameterName,
+        description: '',
+        fileUrls: [],
+        priority: '',
+        rating: 0,
+        category: '',
+        availability: false
+      };
+      this.parameters.push(newParameter);
+      this.newParameterName = ''; // Clear input after adding
+    }
+  }
+
+  exportToPDF(): void {
+  }
+}

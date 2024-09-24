@@ -7,6 +7,8 @@ const auditRoutes = require('./routes/auditRoutes');
 const auditParameterRoutes = require('./routes/auditParameterRoutes');
 const auditTypeRoutes = require('./routes/auditTypeRoutes');
 const hospitalRoutes = require('./routes/hospitalRoutes');
+const parameterNameRoutes = require('./routes/parameterNameRoutes');  // Import parameter name routes
+
 
 const app = express();
 app.use(bodyParser.json());
@@ -19,6 +21,7 @@ app.use('/api/audits', auditRoutes);
 app.use('/api/audit-parameters', auditParameterRoutes);
 app.use('/api/audit-types', auditTypeRoutes);
 app.use('/api/hospitals', hospitalRoutes);
+app.use('/api/parameter-names', parameterNameRoutes);  // Use parameter name routes
 
 // Error handling middleware
 app.use((err, req, res, next) => {

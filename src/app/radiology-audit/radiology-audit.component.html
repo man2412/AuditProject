@@ -1,64 +1,46 @@
-<div class="audit-container">
-    <div class="header">
-        <h1>Radiology Audit</h1>
-  
-      <div class="input-group">
-        <label for="hospitalName">Hospital Name:</label>
-        <input type="text" id="hospitalName" [(ngModel)]="hospitalName" placeholder="Enter hospital name" />
-      </div>
-      <div class="input-group">
-        <label for="auditorName">Auditor Name:</label>
-        <input type="text" id="auditorName" [(ngModel)]="auditorName" placeholder="Enter auditor name" />
-      </div>
-    </div>
-   
-  
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Parameter Name</th>
-            <th>Present</th>
-            <th>Absent</th>
-            <th>Description</th>
-            <th>Rating</th>
-            <th>Attachments</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let param of parameters">
-            <td>{{ param.name }}</td>
-            <td><input type="checkbox" [(ngModel)]="param.yes" [disabled]="!param.editMode" /></td>
-            <td><input type="checkbox" [(ngModel)]="param.no" [disabled]="!param.editMode" /></td>
-            <td><textarea [(ngModel)]="param.description" [disabled]="!param.editMode"></textarea></td>
-            <td>
-              <select [(ngModel)]="param.rating" [disabled]="!param.editMode">
-                <option [ngValue]="null"></option>
-                <option *ngFor="let r of [1, 2, 3, 4, 5]" [ngValue]="r">{{ r }}</option>
-              </select>
-            </td>
-            <td>
-              <input type="file" (change)="onFileChange($event, param)" [disabled]="!param.editMode" multiple>
-              <div *ngFor="let file of param.files; let i = index" class="file-item">
-                <span>{{ file.name }}</span>
-                <img *ngIf="file.dataUrl.startsWith('data:image')" [src]="file.dataUrl" alt="Image" width="50">
-                <span *ngIf="file.dataUrl.startsWith('data:video')">Video: {{ file.name }}</span>
-                <button (click)="removeFile(param, i)" [disabled]="!param.editMode">Remove</button>
-              </div>
-            </td>
-            <td>
-              <button (click)="editParameter(param)" [disabled]="param.editMode">Edit</button>
-              <button (click)="saveParameter(param)" [disabled]="!param.editMode">Save</button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="add-parameter">
-        <input type="text" [(ngModel)]="newParameterName" placeholder="New parameter name" />
-        <button (click)="addParameter()">Add Parameter</button>
-      </div>
-    <button class="export-button" (click)="exportToPDF()">Export to PDF</button>
-  </div>
-  
+<div class="audit-header">
+  <h2>{{ auditTypeName }} - {{ hospitalName }}</h2>
+  <p>Auditor: {{ auditorName }} | Date: {{ auditDate }}</p>
+</div>
+
+<!-- Add New Parameter -->
+<div class="add-parameter">
+  <input type="text" [(ngModel)]="newParameterName" placeholder="Add new parameter name" />
+  <button (click)="addParameter()">Add Parameter</button>
+</div>
+
+<!-- Audit Parameters Table -->
+<div class="table-responsive">
+  <table>
+    <thead>
+      <tr>
+        <th>Parameter Name</th>
+        <th>Availability</th>
+        <th>Description</th>
+        <th>Image</th>
+        <th>Priority</th>
+        <th>Rating</th>
+        <th>Category</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let parameter of parameters">
+        <td>{{ parameter.name }}</td>
+        <td>
+          <input type="checkbox" [(ngModel)]="parameter.availability" />
+        </td>
+        <td><input [(ngModel)]="parameter.description" placeholder="Enter description" /></td>
+        <td><input [(ngModel)]="parameter.fileUrls" placeholder="Enter image URLs" /></td>
+        <td><input [(ngModel)]="parameter.priority" placeholder="Enter priority" /></td>
+        <td><input type="number" [(ngModel)]="parameter.rating" min="0" max="5" /></td>
+        <td><input [(ngModel)]="parameter.category" placeholder="Enter category" /></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Save and Export Buttons -->
+<div class="buttons">
+  <button (click)="saveAndResumeLater()">Save and Resume Later</button>
+  <button (click)="exportToPDF()">Export to PDF</button>
+</div>
